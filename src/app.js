@@ -6,12 +6,14 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  // origin: "http://localhost:5173",
-  origin: "https://gktechhub.com",
-  // origin: "*",
+  origin: [
+    "https://gktechhub.com",
+    "https://www.gktechhub.com"
+  ],
   methods: "GET,POST,PUT,DELETE",
   credentials: true
 }));
+
 app.use(express.json());
 
 // Routes
