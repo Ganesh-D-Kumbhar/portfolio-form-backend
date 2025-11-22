@@ -14,11 +14,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Wake-up / health check route
-app.get("/api/wake-up", (req, res) => {
-  res.status(200).json({ message: "Server is awake 🚀" });
-});
-
 // Routes
 app.use('/api', emailRoutes);
 
