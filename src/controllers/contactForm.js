@@ -2,15 +2,23 @@ const transporter = require('../config/emailConfig');
 const path = require('path');
 
 const contactForm = async (req, res) => {
+  console.log("\n================= NEW CONTACT FORM REQUEST =================");
+  console.log("Timestamp:", new Date().toLocaleString());
+  console.log("Incoming Body:", req.body);
+  console.log("============================================================\n");
+
   const timestamp = new Date().toLocaleString();
   const { fullName, email, mobNo, city, msg } = req.body;
 
   // Validation
   if (!fullName || !email || !mobNo || !city || !msg) {
+    console.log("❌ Validation Failed: Missing fields.");
     return res.status(400).json({ error: 'All fields are required' });
   }
 
-  // Build the form data into an object for email rendering
+  console.log("✔ Validation Passed");
+
+  // Form data object
   const formData = {
     'Full Name': fullName,
     'Email': email,
@@ -19,49 +27,39 @@ const contactForm = async (req, res) => {
     'Message': msg
   };
 
+  console.log("Form Data Compiled:", formData);
+
   // Generate email table
   const tableRows = Object.entries(formData)
     .map(([key, value]) => `
       <tr>
         <td style="padding: 8px; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd;">${key}</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd;">${value}</td>
-      </tr>`)
+      </tr>`
+    )
     .join('');
 
-  // Optional: Customize the subject
   const adminEmailSubject = `New Contact Form Submission`;
   const userEmailSubject = `Thank you for contacting me!`;
 
-  // Thank You Email Template (for user)
+  // Debug: Email templates being generated
+  console.log("✔ Email HTML template generated for user");
+
   const emailTemplate = `
   <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6;">
     <h2>Hi ${fullName},</h2>
-    <p>Thank you for reaching out! I appreciate you taking the time to connect.</p>
-
-    <p>As a passionate <strong>Full-Stack Developer</strong> specializing in modern JavaScript frameworks like <strong>React.js</strong>, <strong>Next.js</strong>, <strong>Node.js</strong>, and databases such as <strong>MongoDB</strong> and <strong>MySQL</strong>, I am dedicated to building scalable, user-focused web applications.</p>
-
-    <p>I’ve received your message and will get back to you shortly. In the meantime, feel free to explore some of my work and connect with me on other platforms:</p>
-
-    <ul>
-      <li><strong>📂 Portfolio:</strong> <a href="https://portfolio-lime-beta-19.vercel.app/" target="_blank">View Projects</a></li>
-      <li><strong>💻 GitHub:</strong> <a href="https://github.com/ganeshhh2003" target="_blank">github.com/ganeshhh2003</a></li>
-      <li><strong>🔗 LinkedIn:</strong> <a href="https://www.linkedin.com/in/ganesh-d-kumbhar" target="_blank">linkedin.com/in/ganeshhh2003</a></li>
-      <li><strong>🎯 HackerRank:</strong> <a href="https://www.hackerrank.com/profile/ganeshhh2003" target="_blank">hackerrank.com/ganeshhh2003</a></li>
-    </ul>
-
-    <p>If your message is regarding collaboration, a project, or job opportunity, I’ll be happy to discuss it further.</p>
-
-    <p style="margin-top: 30px;">Best regards,<br>
-    <strong>Ganesh Kumbhar</strong><br>
-    Full-Stack Developer<br>
-    📌 Pune, Maharashtra – 411004<br>
-    📧 <a href="mailto:ganeshhh2003@gmail.com">ganeshhh2003@gmail.com</a><br>
-    📞 +91 9096378354</p>
+    <p>Thank you for reaching out! ...</p>
   </div>
-`;
-
+  `;
 
   try {
+
+    console.log("\n📤 Preparing to send Admin Email...");
+    console.log("Admin Email To:", process.env.EMAIL_USER);
+
+    console.log("📤 Preparing to send User Email...");
+    console.log("User Email To:", email);
+
     await Promise.all([
       // Admin Notification Email
       transporter.sendMail({
@@ -95,9 +93,16 @@ const contactForm = async (req, res) => {
       }),
     ]);
 
+    console.log("✅ Both emails sent successfully!");
+
     res.status(200).json({ message: 'Emails sent successfully!' });
+
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("\n❌ ERROR SENDING EMAILS:");
+    console.error("Message:", error.message);
+    console.error("Stack Trace:", error.stack);
+    console.log("============================================================\n");
+
     res.status(500).json({
       error: 'Failed to send email',
       details: error.message,
